@@ -40,18 +40,20 @@ class DataController(object):
             self.scales[scale["readable"]] = MettlerLogger(PORT=scale["port"])
 
     def match_source_attributes(self, source):
-        for name, object in self.scales.items():
-            if name == source:
-                return object
+        for attr in self.config["sources"]:
+            if attr["readable"] == source or attr["port"] == source:
+                return source
         logger.critical("Could not match plugin source.")
+        return None
 
     def read(self, source):
         logger.debug("Reading Weight from Scale...")
         scale = self.match_source_attributes(source)
-        weight = scale.get_weight()[0]
-        if weight:
-            return weight
-        return 0
+        if scale:
+            weight = scale.get_weight()[0]
+            if weight:
+                return weight
+        return None
 
 
 class MettlerLogger(object):

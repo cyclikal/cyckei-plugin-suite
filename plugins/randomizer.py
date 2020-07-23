@@ -35,12 +35,15 @@ class DataController(object):
             self.config = json.load(file)
 
     def match_source_attributes(self, source):
-        for source_attribute in self.config["sources"]:
-            if source_attribute["readable"] == source:
-                return source_attribute
+        for attr in self.config["sources"]:
+            if attr["readable"] == source or attr["port"] == source:
+                return attr
         logger.critical("Could not match plugin source.")
+        return None
 
     def read(self, source):
         attr = self.match_source_attributes(source)
-        logger.debug("Generating random integer...")
-        return randint(attr["range"][0], attr["range"][1])
+        if attr:
+            logger.debug("Generating random integer...")
+            return randint(attr["range"][0], attr["range"][1])
+        return None

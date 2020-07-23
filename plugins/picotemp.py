@@ -56,12 +56,15 @@ class DataController(object):
             self.config = json.load(file)
 
     def match_source_attributes(self, source):
-        for source_attribute in self.config["sources"]:
-            if source_attribute["readable"] == source:
-                return source_attribute
+        for attr in self.config["sources"]:
+            if attr["readable"] == source or attr["port"] == source:
+                return attr
         logger.critical("Could not match plugin source.")
+        return None
 
     def read(self, source):
         attr = self.match_source_attributes(source)
-        print(f"Reading from port {attr['port']}")
-        return 0
+        if attr:
+            print(f"Reading from port {attr['port']}")
+            return 0
+        return None

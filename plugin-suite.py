@@ -5,55 +5,61 @@ from importlib.util import spec_from_file_location, module_from_spec
 def main():
     print("Welcome to the Cyckei Plugin Suite!")
     print("Place plugins in the 'plugins' folder of the root directory.")
-    plugins = parse_plugins()
-    return command_loop(plugins)
+    plugins, folder = parse_plugins()
+    return command_loop(plugins, folder)
 
 
 def parse_plugins():
-    plugin_path = path.join(path.dirname(path.abspath(__file__)), "plugins")
-    print(f"Checking available plugins from {plugin_path}...")
+    folder = path.join(path.dirname(path.abspath(__file__)), "plugins")
+    print(f"Checking available plugins from {folder}...")
 
     plugins = [[], []]
-    for file in listdir(plugin_path):
-        if path.isfile(path.join(plugin_path, file)):
-            plugins[0].append(path.join(plugin_path, file))
+    for file in listdir(folder):
+        if path.isfile(path.join(folder, file)):
+            plugins[0].append(path.join(folder, file))
             plugins[1].append(file.split('.')[0])
     print(f"Found these plugins: {plugins[1]}")
 
-    return plugins
+    return plugins, folder
 
 
 def help():
     print("The Cyckei Plugin Suite aids in device plugin development.")
-    print("\toverwrite [plugin]       \t Loads a plugin with default configuration.")
-    print("\tload  [plugin]           \t Loads a plugin with existing configuration.")
+    print("\toverwrite [plugin]       \t Loads plugin with default config.")
+    print("\tload  [plugin]           \t Loads plugin with existing config.")
     print("\tread  [plugin] [address] \t Reads value from loaded device.")
     print("\tlist                     \t Lisrs available plugins.")
     print("\thelp                     \t Displays this help dialog.")
     print("\texit                     \t Closes application.")
 
 
-def load_plugin(path, overwrite=False):
+def load(path, name, folder, overwrite=False):
+    if overwrite:
+        print(f"Loading {name} plugin with new configuration.")
+    else:
+        print(f"Loading {name} plugin.")
+
     if path.isfile(path):
         spec = spec_from_file_location(f"plugin.{path}", path)
         plugin_module = module_from_spec(spec)
         spec.loader.exec_module(plugin_module)
 
     # Rewrite individual configuration and load sources into config for client
-        config_file = f"{plugin_module.DEFAULT_CONFIG['name']}.json"
-        if not exists(config_file) or overwrite:
-            with open(config_file, "w") as file:
-                json.dump(plugin.DEFAULT_CONFIG, file)
+    config_file = path.join(folder,
+                            f"{plugin_module.DEFAULT_CONFIG['name']}.json")
+    if not exists(config_file) or overwrite:
+        with open(config_file, "w") as file:
+            json.dump(plugin.DEFAULT_CONFIG, file)
 
-        with open(config_file) as file:
-            plugin_config = json.load(file)
-        config["plugin_sources"].append({
-            "name": plugin_config["name"],
-            "description": plugin_config["description"],
-            "sources": []
-        })
-        for source in plugin_config["sources"]:
-            config["plugin_sources"][-1]["sources"].append(source["readable"])
+    with open(config_file) as file:
+        plugin_config = json.load(file)
+    config["plugin_sources"].append({
+        "name": plugin_config["name"],
+        "description": plugin_config["description"],
+        "sources": []
+    })
+    for source in plugin_config["sources"]:
+        config["plugin_sources"][-1]["sources"].append(source["readable"])
 
     # Cycle each plugin module up into its own object
     if launch == "server":
@@ -72,7 +78,7 @@ def get_path(name, plugins):
         return None
 
 
-def command_loop(plugins):
+def command_loop(plugins, folder):
     while True:
         command = input("?> ").split()
 
@@ -88,11 +94,11 @@ def command_loop(plugins):
             if command[0] == "overwrite":
                 path = get_path(command[1], plugins)
                 if path:
-                    print(f"Loading {path}, overwrite.")
+                    load(path, command[1], folder, True)
             elif command[0] == "load":
                 path = get_path(command[1], plugins)
                 if path:
-                    print(f"Loading {path}.")
+                    load(path, command[1], folder)
             else:
                 help()
         elif len(command) == 1:

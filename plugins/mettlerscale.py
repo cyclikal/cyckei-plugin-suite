@@ -14,6 +14,7 @@ weight_conversion = {'g': 1, 'mg': 0.001, 'kg': 1000., 'oz': 0.0352739619,
 
 DEFAULT_CONFIG = {
     "name": basename(__file__)[:-3],
+    "version": "0.1.dev1",
     "description": "Plugin to retrieve weight from Mettler Toledo scale.",
     "requirements": ["pyserial"],
     "sources": [

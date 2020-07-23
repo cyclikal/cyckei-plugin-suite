@@ -7,6 +7,7 @@ logger = logging.getLogger('cyckei')
 
 DEFAULT_CONFIG = {
     "name":  basename(__file__)[:-3],
+    "version": "0.1.dev1",
     "description": "Generates random numbers to demonstrate functionality.",
     "requirements": [],
     "sources": [

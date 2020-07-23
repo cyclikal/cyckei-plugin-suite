@@ -6,6 +6,7 @@ logger = logging.getLogger('cyckei')
 
 DEFAULT_CONFIG = {
     "name":  basename(__file__)[:-3],
+    "version": "0.1.dev1",
     "description": "Collects temperature",
     "requirements": ["PicoSDK C Libraries"],
     "sources": [
